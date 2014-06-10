@@ -44,17 +44,67 @@ package Math::Derivative;
 @EXPORT_OK=qw(Derivative1 Derivative2);
 use strict;
 
+# sub Derivative1 {
+#     my ($x,$y)=@_;
+#     my @y2;
+#     my $n=$#{$x};
+#     $y2[0]=($y->[1]-$y->[0])/($x->[1]-$x->[0]);
+#     $y2[$n]=($y->[$n]-$y->[$n-1])/($x->[$n]-$x->[$n-1]);
+#     my $i;
+#     for($i=1; $i<$n; $i++) {
+# 	$y2[$i]=($y->[$i+1]-$y->[$i-1])/($x->[$i+1]-$x->[$i-1]);
+#     }
+#     return @y2;
+# }
+
 sub Derivative1 {
-    my ($x,$y)=@_;
-    my @y2;
-    my $n=$#{$x};
-    $y2[0]=($y->[1]-$y->[0])/($x->[1]-$x->[0]);
-    $y2[$n]=($y->[$n]-$y->[$n-1])/($x->[$n]-$x->[$n-1]);
-    my $i;
-    for($i=1; $i<$n; $i++) {
-	$y2[$i]=($y->[$i+1]-$y->[$i-1])/($x->[$i+1]-$x->[$i-1]);
+    my( $x_vector, $y_vector ) = @_;
+    my( @derivatives );
+
+    my $p1 = _getNextPoint( $x_vector, $y_vector );
+    my $p2 = _getNextPoint( $x_vector, $y_vector );
+
+    push( @derivatives, _slope( $p1, $p2 ) );
+
+    while ( my $p3 = _getNextPoint( $x_vector, $y_vector ) ) {
+	push( @derivatives, _slope( $p1, $p3 ) );
+
+	$p1 = $p2;
+	$p2 = $p3;
     }
-    return @y2;
+
+    push( @derivatives, _slope( $p1, $p2 ) );
+
+    return @derivatives;
+}
+
+sub _getNextPoint {
+    my( $x_vector, $y_vector ) = @_;
+    my $point;
+
+    my $x = shift( @{$x_vector} );
+    my $y = shift( @{$y_vector} );
+
+    if ( defined( $x ) && defined( $y ) ) {
+	$point->{x} = $x;
+	$point->{y} = $y;
+    }
+
+    return $point;
+}
+
+sub _slope {
+    my( $first, $second ) = @_;
+
+    my $dx = ( $second->{x} - $first->{x} );
+    my $dy = ( $second->{y} - $first->{y} );
+
+    my $slope = 0;
+    if ( defined( $dx ) && defined( $dy ) && ( $dx > 0 ) ) {
+	$slope = ( $dy / $dx );
+    }
+
+    return $slope;
 }
 
 sub Derivative2 {
